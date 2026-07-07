@@ -1,5 +1,6 @@
 package com.raizesdonordeste.api.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,6 +12,7 @@ public class Usuario {
     private Long id;
     private String nome;
     private String email;
+    @JsonIgnore
     private String senha;
     private String perfil;
 

@@ -5,6 +5,7 @@ import com.raizesdonordeste.api.domain.repository.UsuarioRepository;
 import com.raizesdonordeste.api.infrastructure.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,6 +22,9 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> dados) {
         String email = dados.get("email");
@@ -28,7 +32,7 @@ public class AuthController {
 
         Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
 
-        if (usuario.isEmpty() || !usuario.get().getSenha().equals(senha)) {
+        if (usuario.isEmpty() || !passwordEncoder.matches(senha, usuario.get().getSenha())) {
             Map<String, String> erro = new HashMap<>();
             erro.put("erro", "Email ou senha inválidos");
             return ResponseEntity.status(401).body(erro);
@@ -41,6 +45,15 @@ public class AuthController {
         resposta.put("perfil", usuario.get().getPerfil());
 
         return ResponseEntity.ok(resposta);
+    }
+
+    @PostMapping("/registro")
+    public ResponseEntity<?> registro(@RequestBody Usuario usuario) {
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        usuarioRepository.save(usuario);
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("mensagem", "Usuário cadastrado com sucesso");
+        return ResponseEntity.status(201).body(resposta);
     }
 
 }

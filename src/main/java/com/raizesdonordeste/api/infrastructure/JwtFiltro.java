@@ -25,6 +25,12 @@ public class JwtFiltro extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String cabecalho = request.getHeader("Authorization");
 
         if (cabecalho != null && cabecalho.startsWith("Bearer ")) {

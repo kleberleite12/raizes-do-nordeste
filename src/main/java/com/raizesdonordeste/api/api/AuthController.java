@@ -38,7 +38,7 @@ public class AuthController {
             return ResponseEntity.status(401).body(erro);
         }
 
-        String token = jwtUtil.gerarToken(email);
+        String token = jwtUtil.gerarToken(email, usuario.get().getPerfil());
         Map<String, String> resposta = new HashMap<>();
         resposta.put("token", token);
         resposta.put("email", email);

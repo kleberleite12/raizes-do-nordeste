@@ -63,4 +63,28 @@ public class PedidoController {
         return pedidoRepository.save(pedido);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> cancelar(@PathVariable Long id) {
+        Optional<Pedido> pedido = pedidoRepository.findById(id);
+
+        if (pedido.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Pedido não encontrado");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        if (pedido.get().getStatus().equals("ENTREGUE")) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Pedido já entregue não pode ser cancelado");
+            return ResponseEntity.status(409).body(erro);
+        }
+
+        pedido.get().setStatus("CANCELADO");
+        pedidoRepository.save(pedido.get());
+
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("mensagem", "Pedido cancelado com sucesso");
+        return ResponseEntity.ok(resposta);
+    }
+
 }

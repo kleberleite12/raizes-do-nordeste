@@ -2,6 +2,7 @@ package com.raizesdonordeste.api.domain.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "pedidos")
@@ -17,6 +18,9 @@ public class Pedido {
     private String formaPagamento;
     private Double total;
     private LocalDateTime dataPedido;
+
+    @Transient
+    private List<ItemPedido> itens;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -41,4 +45,7 @@ public class Pedido {
 
     public LocalDateTime getDataPedido() { return dataPedido; }
     public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }
+
+    public List<ItemPedido> getItens() { return itens; }
+    public void setItens(List<ItemPedido> itens) { this.itens = itens; }
 }

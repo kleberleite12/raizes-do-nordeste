@@ -1,5 +1,6 @@
 package com.raizesdonordeste.api.domain.entity;
 
+import com.raizesdonordeste.api.domain.enums.CanalPedido;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +15,10 @@ public class Pedido {
     private Long clienteId;
     private Long unidadeId;
     private String status;
-    private String canalPedido;
+
+    @Enumerated(EnumType.STRING)
+    private CanalPedido canalPedido;
+
     private String formaPagamento;
     private Double total;
     private LocalDateTime dataPedido;
@@ -34,8 +38,8 @@ public class Pedido {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public String getCanalPedido() { return canalPedido; }
-    public void setCanalPedido(String canalPedido) { this.canalPedido = canalPedido; }
+    public CanalPedido getCanalPedido() { return canalPedido; }
+    public void setCanalPedido(CanalPedido canalPedido) { this.canalPedido = canalPedido; }
 
     public String getFormaPagamento() { return formaPagamento; }
     public void setFormaPagamento(String formaPagamento) { this.formaPagamento = formaPagamento; }

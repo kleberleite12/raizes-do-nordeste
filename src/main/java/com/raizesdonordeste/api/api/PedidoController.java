@@ -3,7 +3,9 @@ package com.raizesdonordeste.api.api;
 import com.raizesdonordeste.api.domain.entity.Estoque;
 import com.raizesdonordeste.api.domain.entity.ItemPedido;
 import com.raizesdonordeste.api.domain.entity.Pedido;
+import com.raizesdonordeste.api.domain.enums.CanalPedido;
 import com.raizesdonordeste.api.domain.repository.EstoqueRepository;
+import com.raizesdonordeste.api.domain.repository.ItemPedidoRepository;
 import com.raizesdonordeste.api.domain.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +26,11 @@ public class PedidoController {
     @Autowired
     private EstoqueRepository estoqueRepository;
 
+    @Autowired
+    private ItemPedidoRepository itemPedidoRepository;
+
     @GetMapping
-    public List<Pedido> listar(@RequestParam(required = false) String canalPedido) {
+    public List<Pedido> listar(@RequestParam(required = false) CanalPedido canalPedido) {
         if (canalPedido != null) {
             return pedidoRepository.findByCanalPedido(canalPedido);
         }
@@ -34,7 +39,7 @@ public class PedidoController {
 
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody Pedido pedido) {
-        if (pedido.getCanalPedido() == null || pedido.getCanalPedido().isEmpty()) {
+        if (pedido.getCanalPedido() == null) {
             Map<String, String> erro = new HashMap<>();
             erro.put("erro", "canalPedido é obrigatório");
             return ResponseEntity.status(422).body(erro);
@@ -53,7 +58,16 @@ public class PedidoController {
             }
         }
 
-        return ResponseEntity.status(201).body(pedidoRepository.save(pedido));
+        Pedido pedidoSalvo = pedidoRepository.save(pedido);
+
+        if (pedido.getItens() != null) {
+            for (ItemPedido item : pedido.getItens()) {
+                item.setPedidoId(pedidoSalvo.getId());
+                itemPedidoRepository.save(item);
+            }
+        }
+
+        return ResponseEntity.status(201).body(pedidoSalvo);
     }
 
     @PutMapping("/{id}/status")

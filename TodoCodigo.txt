@@ -1,0 +1,1035 @@
+﻿package com.raizesdonordeste.api;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ApiApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(ApiApplication.class, args);
+	}
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Usuario;
+import com.raizesdonordeste.api.domain.repository.UsuarioRepository;
+import com.raizesdonordeste.api.infrastructure.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> dados) {
+        String email = dados.get("email");
+        String senha = dados.get("senha");
+
+        Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
+
+        if (usuario.isEmpty() || !passwordEncoder.matches(senha, usuario.get().getSenha())) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Email ou senha invÃ¡lidos");
+            return ResponseEntity.status(401).body(erro);
+        }
+
+        String token = jwtUtil.gerarToken(email, usuario.get().getPerfil());
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("token", token);
+        resposta.put("email", email);
+        resposta.put("perfil", usuario.get().getPerfil());
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PostMapping("/registro")
+    public ResponseEntity<?> registro(@RequestBody Usuario usuario) {
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        usuarioRepository.save(usuario);
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("mensagem", "UsuÃ¡rio cadastrado com sucesso");
+        return ResponseEntity.status(201).body(resposta);
+    }
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Estoque;
+import com.raizesdonordeste.api.domain.repository.EstoqueRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/estoque")
+public class EstoqueController {
+
+    @Autowired
+    private EstoqueRepository estoqueRepository;
+
+    @GetMapping
+    public List<Estoque> listar() {
+        return estoqueRepository.findAll();
+    }
+
+    @PostMapping
+    public Estoque criar(@RequestBody Estoque estoque) {
+        return estoqueRepository.save(estoque);
+    }
+
+    @PutMapping("/entrada")
+    public ResponseEntity<?> entrada(@RequestBody Map<String, Object> dados) {
+        Long produtoId = Long.valueOf(dados.get("produtoId").toString());
+        Long unidadeId = Long.valueOf(dados.get("unidadeId").toString());
+        Integer quantidade = (Integer) dados.get("quantidade");
+
+        Optional<Estoque> estoque = estoqueRepository.findByProdutoIdAndUnidadeId(produtoId, unidadeId);
+
+        if (estoque.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Estoque nÃ£o encontrado para esse produto e unidade");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        estoque.get().setQuantidade(estoque.get().getQuantidade() + quantidade);
+        estoqueRepository.save(estoque.get());
+
+        Map<String, Object> resposta = new HashMap<>();
+        resposta.put("mensagem", "Entrada de estoque registrada com sucesso");
+        resposta.put("quantidadeAtual", estoque.get().getQuantidade());
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PutMapping("/saida")
+    public ResponseEntity<?> saida(@RequestBody Map<String, Object> dados) {
+        Long produtoId = Long.valueOf(dados.get("produtoId").toString());
+        Long unidadeId = Long.valueOf(dados.get("unidadeId").toString());
+        Integer quantidade = (Integer) dados.get("quantidade");
+
+        Optional<Estoque> estoque = estoqueRepository.findByProdutoIdAndUnidadeId(produtoId, unidadeId);
+
+        if (estoque.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Estoque nÃ£o encontrado para esse produto e unidade");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        if (estoque.get().getQuantidade() < quantidade) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Quantidade insuficiente em estoque");
+            return ResponseEntity.status(409).body(erro);
+        }
+
+        estoque.get().setQuantidade(estoque.get().getQuantidade() - quantidade);
+        estoqueRepository.save(estoque.get());
+
+        Map<String, Object> resposta = new HashMap<>();
+        resposta.put("mensagem", "SaÃ­da de estoque registrada com sucesso");
+        resposta.put("quantidadeAtual", estoque.get().getQuantidade());
+        return ResponseEntity.ok(resposta);
+    }
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Fidelidade;
+import com.raizesdonordeste.api.domain.repository.FidelidadeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/fidelidade")
+public class FidelidadeController {
+
+    @Autowired
+    private FidelidadeRepository fidelidadeRepository;
+
+    @PostMapping("/inscricao")
+    public ResponseEntity<?> inscrever(@RequestBody Map<String, Object> dados) {
+        Long clienteId = Long.valueOf(dados.get("clienteId").toString());
+        Boolean consentimento = (Boolean) dados.get("consentimento");
+
+        if (!consentimento) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Ã‰ necessÃ¡rio consentimento para participar do programa");
+            return ResponseEntity.status(400).body(erro);
+        }
+
+        Optional<Fidelidade> existente = fidelidadeRepository.findByClienteId(clienteId);
+        if (existente.isPresent()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Cliente jÃ¡ estÃ¡ inscrito no programa de fidelidade");
+            return ResponseEntity.status(409).body(erro);
+        }
+
+        Fidelidade fidelidade = new Fidelidade();
+        fidelidade.setClienteId(clienteId);
+        fidelidade.setPontos(0);
+        fidelidade.setConsentimento(consentimento);
+        fidelidadeRepository.save(fidelidade);
+
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("mensagem", "Cliente inscrito no programa de fidelidade com sucesso");
+        return ResponseEntity.status(201).body(resposta);
+    }
+
+    @GetMapping("/{clienteId}")
+    public ResponseEntity<?> consultar(@PathVariable Long clienteId) {
+        Optional<Fidelidade> fidelidade = fidelidadeRepository.findByClienteId(clienteId);
+
+        if (fidelidade.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Cliente nÃ£o encontrado no programa de fidelidade");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        return ResponseEntity.ok(fidelidade.get());
+    }
+
+    @PostMapping("/adicionar-pontos")
+    public ResponseEntity<?> adicionarPontos(@RequestBody Map<String, Object> dados) {
+        Long clienteId = Long.valueOf(dados.get("clienteId").toString());
+        Integer pontos = (Integer) dados.get("pontos");
+
+        Optional<Fidelidade> fidelidade = fidelidadeRepository.findByClienteId(clienteId);
+
+        if (fidelidade.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Cliente nÃ£o estÃ¡ inscrito no programa de fidelidade");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        fidelidade.get().setPontos(fidelidade.get().getPontos() + pontos);
+        fidelidadeRepository.save(fidelidade.get());
+
+        Map<String, Object> resposta = new HashMap<>();
+        resposta.put("mensagem", "Pontos adicionados com sucesso");
+        resposta.put("pontosAtuais", fidelidade.get().getPontos());
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PostMapping("/resgatar-pontos")
+    public ResponseEntity<?> resgatarPontos(@RequestBody Map<String, Object> dados) {
+        Long clienteId = Long.valueOf(dados.get("clienteId").toString());
+        Integer pontos = (Integer) dados.get("pontos");
+
+        Optional<Fidelidade> fidelidade = fidelidadeRepository.findByClienteId(clienteId);
+
+        if (fidelidade.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Cliente nÃ£o estÃ¡ inscrito no programa de fidelidade");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        if (fidelidade.get().getPontos() < pontos) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Pontos insuficientes para resgate");
+            return ResponseEntity.status(409).body(erro);
+        }
+
+        fidelidade.get().setPontos(fidelidade.get().getPontos() - pontos);
+        fidelidadeRepository.save(fidelidade.get());
+
+        Map<String, Object> resposta = new HashMap<>();
+        resposta.put("mensagem", "Pontos resgatados com sucesso");
+        resposta.put("pontosRestantes", fidelidade.get().getPontos());
+        return ResponseEntity.ok(resposta);
+    }
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Pagamento;
+import com.raizesdonordeste.api.domain.repository.PagamentoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/pagamentos")
+public class PagamentoController {
+
+    @Autowired
+    private PagamentoRepository pagamentoRepository;
+
+    @GetMapping
+    public List<Pagamento> listar() {
+        return pagamentoRepository.findAll();
+    }
+
+    @PostMapping
+    public ResponseEntity<?> criar(@RequestBody Pagamento pagamento) {
+        if (pagamento.getValor() == null || pagamento.getValor() <= 0) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Valor do pagamento invÃ¡lido");
+            return ResponseEntity.status(422).body(erro);
+        }
+
+        if (pagamento.getValor() > 10000) {
+            pagamento.setStatus("RECUSADO");
+            pagamentoRepository.save(pagamento);
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("status", "RECUSADO");
+            resposta.put("mensagem", "Pagamento recusado pelo gateway mock. Valor acima do limite permitido.");
+            return ResponseEntity.status(402).body(resposta);
+        }
+
+        pagamento.setStatus("APROVADO");
+        return ResponseEntity.ok(pagamentoRepository.save(pagamento));
+    }
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Estoque;
+import com.raizesdonordeste.api.domain.entity.ItemPedido;
+import com.raizesdonordeste.api.domain.entity.Pedido;
+import com.raizesdonordeste.api.domain.enums.CanalPedido;
+import com.raizesdonordeste.api.domain.repository.EstoqueRepository;
+import com.raizesdonordeste.api.domain.repository.ItemPedidoRepository;
+import com.raizesdonordeste.api.domain.repository.PedidoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/pedidos")
+public class PedidoController {
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private EstoqueRepository estoqueRepository;
+
+    @Autowired
+    private ItemPedidoRepository itemPedidoRepository;
+
+    @GetMapping
+    public List<Pedido> listar(@RequestParam(required = false) CanalPedido canalPedido) {
+        if (canalPedido != null) {
+            return pedidoRepository.findByCanalPedido(canalPedido);
+        }
+        return pedidoRepository.findAll();
+    }
+
+    @PostMapping
+    public ResponseEntity<?> criar(@RequestBody Pedido pedido) {
+        if (pedido.getCanalPedido() == null) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "canalPedido Ã© obrigatÃ³rio");
+            return ResponseEntity.status(422).body(erro);
+        }
+
+        if (pedido.getItens() != null) {
+            for (ItemPedido item : pedido.getItens()) {
+                Optional<Estoque> estoque = estoqueRepository
+                        .findByProdutoIdAndUnidadeId(item.getProdutoId(), pedido.getUnidadeId());
+
+                if (estoque.isEmpty() || estoque.get().getQuantidade() < item.getQuantidade()) {
+                    Map<String, String> erro = new HashMap<>();
+                    erro.put("erro", "Estoque insuficiente para o produto " + item.getProdutoId());
+                    return ResponseEntity.status(409).body(erro);
+                }
+            }
+        }
+
+        Pedido pedidoSalvo = pedidoRepository.save(pedido);
+
+        if (pedido.getItens() != null) {
+            for (ItemPedido item : pedido.getItens()) {
+                item.setPedidoId(pedidoSalvo.getId());
+                itemPedidoRepository.save(item);
+            }
+        }
+
+        return ResponseEntity.status(201).body(pedidoSalvo);
+    }
+
+    @PutMapping("/{id}/status")
+    public Pedido atualizarStatus(@PathVariable Long id, @RequestParam String status) {
+        Pedido pedido = pedidoRepository.findById(id).orElseThrow();
+        pedido.setStatus(status);
+        return pedidoRepository.save(pedido);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> cancelar(@PathVariable Long id) {
+        Optional<Pedido> pedido = pedidoRepository.findById(id);
+
+        if (pedido.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Pedido nÃ£o encontrado");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        if (pedido.get().getStatus().equals("ENTREGUE")) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Pedido jÃ¡ entregue nÃ£o pode ser cancelado");
+            return ResponseEntity.status(409).body(erro);
+        }
+
+        pedido.get().setStatus("CANCELADO");
+        pedidoRepository.save(pedido.get());
+
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("mensagem", "Pedido cancelado com sucesso");
+        return ResponseEntity.ok(resposta);
+    }
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Produto;
+import com.raizesdonordeste.api.domain.repository.ProdutoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/produtos")
+public class ProdutoController {
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @GetMapping
+    public List<Produto> listar() {
+        return produtoRepository.findAll();
+    }
+
+    @PostMapping
+    public Produto criar(@RequestBody Produto produto) {
+        return produtoRepository.save(produto);
+    }
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Unidade;
+import com.raizesdonordeste.api.domain.repository.UnidadeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/unidades")
+public class UnidadeController {
+
+    @Autowired
+    private UnidadeRepository unidadeRepository;
+
+    @GetMapping
+    public List<Unidade> listar() {
+        return unidadeRepository.findAll();
+    }
+
+    @PostMapping
+    public Unidade criar(@RequestBody Unidade unidade) {
+        return unidadeRepository.save(unidade);
+    }
+
+}
+package com.raizesdonordeste.api.api;
+
+import com.raizesdonordeste.api.domain.entity.Usuario;
+import com.raizesdonordeste.api.domain.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/usuarios")
+public class UsuarioController {
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @GetMapping
+    public List<Usuario> listar() {
+        return usuarioRepository.findAll();
+    }
+
+    @PostMapping
+    public Usuario criar(@RequestBody Usuario usuario) {
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        return usuarioRepository.save(usuario);
+    }
+
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "estoque")
+public class Estoque {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long unidadeId;
+    private Long produtoId;
+    private Integer quantidade;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getUnidadeId() { return unidadeId; }
+    public void setUnidadeId(Long unidadeId) { this.unidadeId = unidadeId; }
+
+    public Long getProdutoId() { return produtoId; }
+    public void setProdutoId(Long produtoId) { this.produtoId = produtoId; }
+
+    public Integer getQuantidade() { return quantidade; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "fidelidade")
+public class Fidelidade {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long clienteId;
+    private Integer pontos;
+    private Boolean consentimento;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getClienteId() { return clienteId; }
+    public void setClienteId(Long clienteId) { this.clienteId = clienteId; }
+
+    public Integer getPontos() { return pontos; }
+    public void setPontos(Integer pontos) { this.pontos = pontos; }
+
+    public Boolean getConsentimento() { return consentimento; }
+    public void setConsentimento(Boolean consentimento) { this.consentimento = consentimento; }
+
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "itens_pedido")
+public class ItemPedido {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long pedidoId;
+    private Long produtoId;
+    private Integer quantidade;
+    private Double precoUnitario;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getPedidoId() { return pedidoId; }
+    public void setPedidoId(Long pedidoId) { this.pedidoId = pedidoId; }
+
+    public Long getProdutoId() { return produtoId; }
+    public void setProdutoId(Long produtoId) { this.produtoId = produtoId; }
+
+    public Integer getQuantidade() { return quantidade; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+
+    public Double getPrecoUnitario() { return precoUnitario; }
+    public void setPrecoUnitario(Double precoUnitario) { this.precoUnitario = precoUnitario; }
+
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "pagamentos")
+public class Pagamento {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long pedidoId;
+    private String status;
+    private String formaPagamento;
+    private Double valor;
+    private LocalDateTime dataPagamento;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getPedidoId() { return pedidoId; }
+    public void setPedidoId(Long pedidoId) { this.pedidoId = pedidoId; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getFormaPagamento() { return formaPagamento; }
+    public void setFormaPagamento(String formaPagamento) { this.formaPagamento = formaPagamento; }
+
+    public Double getValor() { return valor; }
+    public void setValor(Double valor) { this.valor = valor; }
+
+    public LocalDateTime getDataPagamento() { return dataPagamento; }
+    public void setDataPagamento(LocalDateTime dataPagamento) { this.dataPagamento = dataPagamento; }
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import com.raizesdonordeste.api.domain.enums.CanalPedido;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Entity
+@Table(name = "pedidos")
+public class Pedido {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long clienteId;
+    private Long unidadeId;
+    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private CanalPedido canalPedido;
+
+    private String formaPagamento;
+    private Double total;
+    private LocalDateTime dataPedido;
+
+    @Transient
+    private List<ItemPedido> itens;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getClienteId() { return clienteId; }
+    public void setClienteId(Long clienteId) { this.clienteId = clienteId; }
+
+    public Long getUnidadeId() { return unidadeId; }
+    public void setUnidadeId(Long unidadeId) { this.unidadeId = unidadeId; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public CanalPedido getCanalPedido() { return canalPedido; }
+    public void setCanalPedido(CanalPedido canalPedido) { this.canalPedido = canalPedido; }
+
+    public String getFormaPagamento() { return formaPagamento; }
+    public void setFormaPagamento(String formaPagamento) { this.formaPagamento = formaPagamento; }
+
+    public Double getTotal() { return total; }
+    public void setTotal(Double total) { this.total = total; }
+
+    public LocalDateTime getDataPedido() { return dataPedido; }
+    public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }
+
+    public List<ItemPedido> getItens() { return itens; }
+    public void setItens(List<ItemPedido> itens) { this.itens = itens; }
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "produtos")
+public class Produto {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String nome;
+    private String descricao;
+    private Double preco;
+    private String categoria;
+    private Boolean ativo;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
+
+    public Double getPreco() { return preco; }
+    public void setPreco(Double preco) { this.preco = preco; }
+
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+
+    public Boolean getAtivo() { return ativo; }
+    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "unidades")
+public class Unidade {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String nome;
+    private String endereco;
+    private String cidade;
+    private String estado;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
+    public String getEndereco() { return endereco; }
+    public void setEndereco(String endereco) { this.endereco = endereco; }
+
+    public String getCidade() { return cidade; }
+    public void setCidade(String cidade) { this.cidade = cidade; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+
+}
+package com.raizesdonordeste.api.domain.entity;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "usuarios")
+public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String nome;
+    private String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String senha;
+    private String perfil;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
+
+    public String getPerfil() { return perfil; }
+    public void setPerfil(String perfil) { this.perfil = perfil; }
+}
+package com.raizesdonordeste.api.domain.enums;
+
+public enum CanalPedido {
+    APP,
+    TOTEM,
+    BALCAO,
+    PICKUP,
+    WEB
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.Estoque;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface EstoqueRepository extends JpaRepository<Estoque, Long> {
+
+    Optional<Estoque> findByProdutoIdAndUnidadeId(Long produtoId, Long unidadeId);
+
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.Fidelidade;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface FidelidadeRepository extends JpaRepository<Fidelidade, Long> {
+
+    Optional<Fidelidade> findByClienteId(Long clienteId);
+
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.ItemPedido;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ItemPedidoRepository extends JpaRepository<ItemPedido, Long> {
+
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.Pagamento;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
+
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.Pedido;
+import com.raizesdonordeste.api.domain.enums.CanalPedido;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface PedidoRepository extends JpaRepository<Pedido, Long> {
+
+    List<Pedido> findByCanalPedido(CanalPedido canalPedido);
+
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.Produto;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.Unidade;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UnidadeRepository extends JpaRepository<Unidade, Long> {
+
+}
+package com.raizesdonordeste.api.domain.repository;
+
+import com.raizesdonordeste.api.domain.entity.Usuario;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+    Optional<Usuario> findByEmail(String email);
+
+}
+package com.raizesdonordeste.api.infrastructure;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+@Component
+public class JwtFiltro extends OncePerRequestFilter {
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String cabecalho = request.getHeader("Authorization");
+
+        if (cabecalho != null && cabecalho.startsWith("Bearer ")) {
+            String token = cabecalho.substring(7);
+            if (jwtUtil.validarToken(token)) {
+                String email = jwtUtil.extrairEmail(token);
+                String perfil = jwtUtil.extrairPerfil(token);
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + perfil);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(email, null, List.of(authority));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+package com.raizesdonordeste.api.infrastructure;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Date;
+
+@Component
+public class JwtUtil {
+
+    private Key chave = Keys.hmacShaKeyFor(
+            "raizesdonordeste2026chaveSecretaParaJWT123456".getBytes()
+    );
+
+    public String gerarToken(String email, String perfil) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("perfil", perfil)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .signWith(chave)
+                .compact();
+    }
+
+    public String extrairEmail(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(chave)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public String extrairPerfil(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(chave)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("perfil", String.class);
+    }
+
+    public boolean validarToken(String token) {
+        try {
+            extrairEmail(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+}
+package com.raizesdonordeste.api.infrastructure;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+public class SecurityConfig {
+
+    @Autowired
+    private JwtFiltro jwtFiltro;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/registro").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/produtos").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/unidades").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/usuarios").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtFiltro, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+}
+package com.raizesdonordeste.api;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ApiApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}

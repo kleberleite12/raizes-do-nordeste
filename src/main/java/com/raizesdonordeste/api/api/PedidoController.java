@@ -31,10 +31,16 @@ public class PedidoController {
 
     @GetMapping
     public List<Pedido> listar(@RequestParam(required = false) CanalPedido canalPedido) {
+        List<Pedido> pedidos;
         if (canalPedido != null) {
-            return pedidoRepository.findByCanalPedido(canalPedido);
+            pedidos = pedidoRepository.findByCanalPedido(canalPedido);
+        } else {
+            pedidos = pedidoRepository.findAll();
         }
-        return pedidoRepository.findAll();
+        for (Pedido pedido : pedidos) {
+            pedido.setItens(itemPedidoRepository.findByPedidoId(pedido.getId()));
+        }
+        return pedidos;
     }
 
     @PostMapping

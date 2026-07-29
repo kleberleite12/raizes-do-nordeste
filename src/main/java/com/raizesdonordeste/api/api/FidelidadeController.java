@@ -81,4 +81,32 @@ public class FidelidadeController {
         return ResponseEntity.ok(resposta);
     }
 
+    @PostMapping("/resgatar-pontos")
+    public ResponseEntity<?> resgatarPontos(@RequestBody Map<String, Object> dados) {
+        Long clienteId = Long.valueOf(dados.get("clienteId").toString());
+        Integer pontos = (Integer) dados.get("pontos");
+
+        Optional<Fidelidade> fidelidade = fidelidadeRepository.findByClienteId(clienteId);
+
+        if (fidelidade.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Cliente não está inscrito no programa de fidelidade");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        if (fidelidade.get().getPontos() < pontos) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Pontos insuficientes para resgate");
+            return ResponseEntity.status(409).body(erro);
+        }
+
+        fidelidade.get().setPontos(fidelidade.get().getPontos() - pontos);
+        fidelidadeRepository.save(fidelidade.get());
+
+        Map<String, Object> resposta = new HashMap<>();
+        resposta.put("mensagem", "Pontos resgatados com sucesso");
+        resposta.put("pontosRestantes", fidelidade.get().getPontos());
+        return ResponseEntity.ok(resposta);
+    }
+
 }

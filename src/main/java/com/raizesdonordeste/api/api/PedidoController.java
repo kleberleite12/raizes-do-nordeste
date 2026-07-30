@@ -70,6 +70,13 @@ public class PedidoController {
             for (ItemPedido item : pedido.getItens()) {
                 item.setPedidoId(pedidoSalvo.getId());
                 itemPedidoRepository.save(item);
+
+                Optional<Estoque> estoque = estoqueRepository
+                        .findByProdutoIdAndUnidadeId(item.getProdutoId(), pedido.getUnidadeId());
+                if (estoque.isPresent()) {
+                    estoque.get().setQuantidade(estoque.get().getQuantidade() - item.getQuantidade());
+                    estoqueRepository.save(estoque.get());
+                }
             }
         }
 
@@ -77,10 +84,18 @@ public class PedidoController {
     }
 
     @PutMapping("/{id}/status")
-    public Pedido atualizarStatus(@PathVariable Long id, @RequestParam String status) {
+    public ResponseEntity<?> atualizarStatus(@PathVariable Long id, @RequestParam String status) {
+        List<String> statusPermitidos = List.of("AGUARDANDO_PAGAMENTO", "PAGO", "EM_PREPARO", "PRONTO", "ENTREGUE", "CANCELADO");
+
+        if (!statusPermitidos.contains(status)) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Status inválido. Valores permitidos: " + statusPermitidos);
+            return ResponseEntity.status(422).body(erro);
+        }
+
         Pedido pedido = pedidoRepository.findById(id).orElseThrow();
         pedido.setStatus(status);
-        return pedidoRepository.save(pedido);
+        return ResponseEntity.ok(pedidoRepository.save(pedido));
     }
 
     @DeleteMapping("/{id}")

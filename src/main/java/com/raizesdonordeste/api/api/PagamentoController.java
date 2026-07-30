@@ -7,6 +7,7 @@ import com.raizesdonordeste.api.domain.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,8 @@ public class PagamentoController {
                 pedidoRepository.save(pedido.get());
             }
 
+            System.out.println("[LOG] " + LocalDateTime.now() + " - PAGAMENTO RECUSADO - pedido: " + pagamento.getPedidoId() + " - valor: " + pagamento.getValor());
+
             Map<String, String> resposta = new HashMap<>();
             resposta.put("status", "RECUSADO");
             resposta.put("mensagem", "Pagamento recusado pelo gateway mock. Valor acima do limite permitido.");
@@ -59,6 +62,8 @@ public class PagamentoController {
             pedido.get().setStatus("PAGO");
             pedidoRepository.save(pedido.get());
         }
+
+        System.out.println("[LOG] " + LocalDateTime.now() + " - PAGAMENTO APROVADO - pedido: " + pagamento.getPedidoId() + " - valor: " + pagamento.getValor());
 
         return ResponseEntity.ok(pagamento);
     }

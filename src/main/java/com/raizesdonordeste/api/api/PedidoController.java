@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,8 @@ public class PedidoController {
             }
         }
 
+        System.out.println("[LOG] " + LocalDateTime.now() + " - PEDIDO CRIADO - id: " + pedidoSalvo.getId() + " - canal: " + pedidoSalvo.getCanalPedido() + " - cliente: " + pedidoSalvo.getClienteId());
+
         return ResponseEntity.status(201).body(pedidoSalvo);
     }
 
@@ -94,8 +97,13 @@ public class PedidoController {
         }
 
         Pedido pedido = pedidoRepository.findById(id).orElseThrow();
+        String statusAnterior = pedido.getStatus();
         pedido.setStatus(status);
-        return ResponseEntity.ok(pedidoRepository.save(pedido));
+        pedidoRepository.save(pedido);
+
+        System.out.println("[LOG] " + LocalDateTime.now() + " - STATUS ATUALIZADO - pedido: " + id + " - de: " + statusAnterior + " para: " + status);
+
+        return ResponseEntity.ok(pedido);
     }
 
     @DeleteMapping("/{id}")
@@ -116,6 +124,8 @@ public class PedidoController {
 
         pedido.get().setStatus("CANCELADO");
         pedidoRepository.save(pedido.get());
+
+        System.out.println("[LOG] " + LocalDateTime.now() + " - PEDIDO CANCELADO - id: " + id);
 
         Map<String, String> resposta = new HashMap<>();
         resposta.put("mensagem", "Pedido cancelado com sucesso");

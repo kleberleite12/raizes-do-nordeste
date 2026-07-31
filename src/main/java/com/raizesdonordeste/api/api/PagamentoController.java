@@ -36,32 +36,45 @@ public class PagamentoController {
             return ResponseEntity.status(422).body(erro);
         }
 
+        if (pagamento.getPedidoId() == null) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "pedidoId é obrigatório");
+            return ResponseEntity.status(422).body(erro);
+        }
+
+        Optional<Pedido> pedidoEncontrado = pedidoRepository.findById(pagamento.getPedidoId());
+        if (pedidoEncontrado.isEmpty()) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "Pedido não encontrado");
+            return ResponseEntity.status(404).body(erro);
+        }
+
+        Pedido pedido = pedidoEncontrado.get();
+        pagamento.setDataPagamento(LocalDateTime.now());
+
         if (pagamento.getValor() > 10000) {
             pagamento.setStatus("RECUSADO");
             pagamentoRepository.save(pagamento);
 
-            Optional<Pedido> pedido = pedidoRepository.findById(pagamento.getPedidoId());
-            if (pedido.isPresent()) {
-                pedido.get().setStatus("AGUARDANDO_PAGAMENTO");
-                pedidoRepository.save(pedido.get());
-            }
+            pedido.setStatus("AGUARDANDO_PAGAMENTO");
+            pedidoRepository.save(pedido);
 
             System.out.println("[LOG] " + LocalDateTime.now() + " - PAGAMENTO RECUSADO - pedido: " + pagamento.getPedidoId() + " - valor: " + pagamento.getValor());
 
-            Map<String, String> resposta = new HashMap<>();
+            Map<String, Object> resposta = new HashMap<>();
+            resposta.put("pagamentoId", pagamento.getId());
+            resposta.put("pedidoId", pagamento.getPedidoId());
             resposta.put("status", "RECUSADO");
+            resposta.put("statusPedido", pedido.getStatus());
             resposta.put("mensagem", "Pagamento recusado pelo gateway mock. Valor acima do limite permitido.");
-            return ResponseEntity.status(402).body(resposta);
+            return ResponseEntity.ok(resposta);
         }
 
         pagamento.setStatus("APROVADO");
         pagamentoRepository.save(pagamento);
 
-        Optional<Pedido> pedido = pedidoRepository.findById(pagamento.getPedidoId());
-        if (pedido.isPresent()) {
-            pedido.get().setStatus("PAGO");
-            pedidoRepository.save(pedido.get());
-        }
+        pedido.setStatus("PAGO");
+        pedidoRepository.save(pedido);
 
         System.out.println("[LOG] " + LocalDateTime.now() + " - PAGAMENTO APROVADO - pedido: " + pagamento.getPedidoId() + " - valor: " + pagamento.getValor());
 

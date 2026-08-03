@@ -11,6 +11,9 @@ import com.raizesdonordeste.api.domain.repository.PedidoRepository;
 import com.raizesdonordeste.api.domain.repository.ProdutoRepository;
 import com.raizesdonordeste.api.domain.repository.UnidadeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,14 +43,26 @@ public class PedidoController {
     private UnidadeRepository unidadeRepository;
 
     @GetMapping
-    public List<Pedido> listar(@RequestParam(required = false) CanalPedido canalPedido) {
-        List<Pedido> pedidos;
-        if (canalPedido != null) {
-            pedidos = pedidoRepository.findByCanalPedido(canalPedido);
-        } else {
-            pedidos = pedidoRepository.findAll();
+    public Page<Pedido> listar(@RequestParam(required = false) CanalPedido canalPedido,
+                               @RequestParam(defaultValue = "1") int page,
+                               @RequestParam(defaultValue = "10") int limit) {
+        if (page < 1) {
+            page = 1;
         }
-        for (Pedido pedido : pedidos) {
+        if (limit < 1) {
+            limit = 10;
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, limit);
+
+        Page<Pedido> pedidos;
+        if (canalPedido != null) {
+            pedidos = pedidoRepository.findByCanalPedido(canalPedido, pageable);
+        } else {
+            pedidos = pedidoRepository.findAll(pageable);
+        }
+
+        for (Pedido pedido : pedidos.getContent()) {
             pedido.setItens(itemPedidoRepository.findByPedidoId(pedido.getId()));
         }
         return pedidos;

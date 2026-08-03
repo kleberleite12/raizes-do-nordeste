@@ -19,8 +19,14 @@ public class FidelidadeController {
 
     @PostMapping("/inscricao")
     public ResponseEntity<?> inscrever(@RequestBody Map<String, Object> dados) {
+        if (dados.get("clienteId") == null || dados.get("consentimento") == null) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "clienteId e consentimento são obrigatórios");
+            return ResponseEntity.status(422).body(erro);
+        }
+
         Long clienteId = Long.valueOf(dados.get("clienteId").toString());
-        Boolean consentimento = (Boolean) dados.get("consentimento");
+        Boolean consentimento = Boolean.valueOf(dados.get("consentimento").toString());
 
         if (!consentimento) {
             Map<String, String> erro = new HashMap<>();
@@ -61,8 +67,20 @@ public class FidelidadeController {
 
     @PostMapping("/adicionar-pontos")
     public ResponseEntity<?> adicionarPontos(@RequestBody Map<String, Object> dados) {
+        if (dados.get("clienteId") == null || dados.get("pontos") == null) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "clienteId e pontos são obrigatórios");
+            return ResponseEntity.status(422).body(erro);
+        }
+
         Long clienteId = Long.valueOf(dados.get("clienteId").toString());
-        Integer pontos = (Integer) dados.get("pontos");
+        Integer pontos = Integer.valueOf(dados.get("pontos").toString());
+
+        if (pontos <= 0) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "A quantidade de pontos deve ser maior que zero");
+            return ResponseEntity.status(422).body(erro);
+        }
 
         Optional<Fidelidade> fidelidade = fidelidadeRepository.findByClienteId(clienteId);
 
@@ -83,8 +101,20 @@ public class FidelidadeController {
 
     @PostMapping("/resgatar-pontos")
     public ResponseEntity<?> resgatarPontos(@RequestBody Map<String, Object> dados) {
+        if (dados.get("clienteId") == null || dados.get("pontos") == null) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "clienteId e pontos são obrigatórios");
+            return ResponseEntity.status(422).body(erro);
+        }
+
         Long clienteId = Long.valueOf(dados.get("clienteId").toString());
-        Integer pontos = (Integer) dados.get("pontos");
+        Integer pontos = Integer.valueOf(dados.get("pontos").toString());
+
+        if (pontos <= 0) {
+            Map<String, String> erro = new HashMap<>();
+            erro.put("erro", "A quantidade de pontos deve ser maior que zero");
+            return ResponseEntity.status(422).body(erro);
+        }
 
         Optional<Fidelidade> fidelidade = fidelidadeRepository.findByClienteId(clienteId);
 

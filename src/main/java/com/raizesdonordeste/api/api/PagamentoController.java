@@ -5,11 +5,12 @@ import com.raizesdonordeste.api.domain.entity.Pedido;
 import com.raizesdonordeste.api.domain.repository.PagamentoRepository;
 import com.raizesdonordeste.api.domain.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,8 +25,15 @@ public class PagamentoController {
     private PedidoRepository pedidoRepository;
 
     @GetMapping
-    public List<Pagamento> listar() {
-        return pagamentoRepository.findAll();
+    public Page<Pagamento> listar(@RequestParam(defaultValue = "1") int page,
+                                  @RequestParam(defaultValue = "10") int limit) {
+        if (page < 1) {
+            page = 1;
+        }
+        if (limit < 1) {
+            limit = 10;
+        }
+        return pagamentoRepository.findAll(PageRequest.of(page - 1, limit));
     }
 
     @PostMapping

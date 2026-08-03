@@ -13,11 +13,14 @@
         {
           "name": "T01 - Login válido",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"admin@raizes.com\",\r\n    \"senha\": \"123456\"\r\n}",
+              "raw": "{\r\n  \"email\": \"admin@raizes.com\",\r\n  \"senha\": \"Admin@2026\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -52,22 +55,31 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODM1MDkzNjAsImV4cCI6MTc4MzU5NTc2MH0.40s9zB0AO84ai_wEPxFqHg7HBfZJAQBi0u7S34awvKM",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NTYzMzAsImV4cCI6MTc4NTg0MjczMH0.A6dV3TETFNBWhrXOknqxNNoInPMc__laLtg-07qR5XI",
                   "type": "string"
                 }
               ]
             },
-            "method": "GET",
+            "method": "POST",
             "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Raizes do Nordeste - Centro\",\r\n  \"endereco\": \"Rua das Flores, 100\",\r\n  \"cidade\": \"Recife\",\r\n  \"estado\": \"PE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "http://localhost:8080/usuarios",
+              "raw": "http://localhost:8080/unidades",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "port": "8080",
               "path": [
-                "usuarios"
+                "unidades"
               ]
             }
           },
@@ -81,7 +93,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODM1MDkzNjAsImV4cCI6MTc4MzU5NTc2MH0.40s9zB0AO84ai_wEPxFqHg7HBfZJAQBi0u7S34awvKM",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NTYzMzAsImV4cCI6MTc4NTg0MjczMH0.A6dV3TETFNBWhrXOknqxNNoInPMc__laLtg-07qR5XI",
                   "type": "string"
                 }
               ]
@@ -90,7 +102,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"nome\": \"Baião de Dois\",\r\n    \"descricao\": \"Prato típico nordestino\",\r\n    \"preco\": 25.90,\r\n    \"categoria\": \"Prato Principal\",\r\n    \"ativo\": true\r\n}",
+              "raw": "{\r\n  \"nome\": \"Baião de Dois\",\r\n  \"descricao\": \"Prato típico nordestino\",\r\n  \"preco\": 25.90,\r\n  \"categoria\": \"Prato Principal\",\r\n  \"ativo\": true\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -119,7 +131,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODM1MDkzNjAsImV4cCI6MTc4MzU5NTc2MH0.40s9zB0AO84ai_wEPxFqHg7HBfZJAQBi0u7S34awvKM",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NTYzMzAsImV4cCI6MTc4NTg0MjczMH0.A6dV3TETFNBWhrXOknqxNNoInPMc__laLtg-07qR5XI",
                   "type": "string"
                 }
               ]
@@ -128,7 +140,89 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"clienteId\": 2,\r\n    \"unidadeId\": 1,\r\n    \"status\": \"AGUARDANDO_PAGAMENTO\",\r\n    \"canalPedido\": \"APP\",\r\n    \"formaPagamento\": \"MOCK\",\r\n    \"total\": 25.90,\r\n    \"dataPedido\": \"2026-07-08T10:00:00\",\r\n    \"itens\": [\r\n        {\"produtoId\": 1, \"quantidade\": 2}\r\n    ]\r\n}",
+              "raw": "{\r\n  \"unidadeId\": 1,\r\n  \"produtoId\": 1,\r\n  \"quantidade\": 10\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/estoque",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "estoque"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "T16 - Inscricao fidelidade",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NjYzMjMsImV4cCI6MTc4NTg1MjcyM30.rigKdppII1gNb3YKkZkweOihHaMwIQwbijnY25YJ2tc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"clienteId\": 2,\r\n  \"consentimento\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/fidelidade/inscricao",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "fidelidade",
+                "inscricao"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pedidos",
+      "item": [
+        {
+          "name": "T05 - Criar pedido",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NTYzMzAsImV4cCI6MTc4NTg0MjczMH0.A6dV3TETFNBWhrXOknqxNNoInPMc__laLtg-07qR5XI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"clienteId\": 2,\r\n  \"unidadeId\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"formaPagamento\": \"MOCK\",\r\n  \"itens\": [\r\n    { \"produtoId\": 1, \"quantidade\": 2 }\r\n  ]\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -150,27 +244,111 @@
           "response": []
         },
         {
-          "name": "T16 - Inscricao fidelidade",
-          "request": {
-            "method": "GET",
-            "header": []
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Pedidos",
-      "item": [
-        {
-          "name": "T05 - Criar pedido",
+          "name": "T07 - Atualizar status do pedido",
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODM1MDkzNjAsImV4cCI6MTc4MzU5NTc2MH0.40s9zB0AO84ai_wEPxFqHg7HBfZJAQBi0u7S34awvKM",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NTYzMzAsImV4cCI6MTc4NTg0MjczMH0.A6dV3TETFNBWhrXOknqxNNoInPMc__laLtg-07qR5XI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/pedidos/1/status?status=EM_PREPARO",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pedidos",
+                "1",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "EM_PREPARO"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "T08 - Filtrar pedidos por canal",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NjYzMjMsImV4cCI6MTc4NTg1MjcyM30.rigKdppII1gNb3YKkZkweOihHaMwIQwbijnY25YJ2tc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/pedidos?canalPedido=APP&page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pedidos"
+              ],
+              "query": [
+                {
+                  "key": "canalPedido",
+                  "value": "APP"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pagamentos",
+      "item": [
+        {
+          "name": "T06 - Pagamento aprovado",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NTYzMzAsImV4cCI6MTc4NTg0MjczMH0.A6dV3TETFNBWhrXOknqxNNoInPMc__laLtg-07qR5XI",
                   "type": "string"
                 }
               ]
@@ -179,7 +357,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"pedidoId\": 1,\r\n    \"formaPagamento\": \"MOCK\",\r\n    \"valor\": 25.90\r\n}",
+              "raw": "{\r\n  \"pedidoId\": 1,\r\n  \"valor\": 51.80,\r\n  \"formaPagamento\": \"MOCK\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -201,92 +379,6 @@
           "response": []
         },
         {
-          "name": "T07 - Atualizar status do pedido",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/pedidos",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "pedidos"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "T08 - Filtrar pedidos por canal",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnRlQHJhaXplcy5jb20iLCJwZXJmaWwiOiJDTElFTlRFIiwiaWF0IjoxNzgzNTA2OTQ0LCJleHAiOjE3ODM1OTMzNDR9.8PvdaRpNvQIKDJLHh0GMO1ZOjcfy7u_s-yGhdlSQOKI",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/usuarios",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "usuarios"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Pagamentos",
-      "item": [
-        {
-          "name": "T06 - Pagamento aprovado",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODM1MDkzNjAsImV4cCI6MTc4MzU5NTc2MH0.40s9zB0AO84ai_wEPxFqHg7HBfZJAQBi0u7S34awvKM",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/fidelidade/2",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "fidelidade",
-                "2"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "T09 - Pagamento recusado",
           "request": {
             "auth": {
@@ -294,7 +386,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnRlQHJhaXplcy5jb20iLCJwZXJmaWwiOiJDTElFTlRFIiwiaWF0IjoxNzgzNTA2OTQ0LCJleHAiOjE3ODM1OTMzNDR9.8PvdaRpNvQIKDJLHh0GMO1ZOjcfy7u_s-yGhdlSQOKI",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NTYzMzAsImV4cCI6MTc4NTg0MjczMH0.A6dV3TETFNBWhrXOknqxNNoInPMc__laLtg-07qR5XI",
                   "type": "string"
                 }
               ]
@@ -303,7 +395,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"clienteId\": 2,\r\n    \"unidadeId\": 1,\r\n    \"status\": \"AGUARDANDO_PAGAMENTO\",\r\n    \"formaPagamento\": \"MOCK\",\r\n    \"total\": 25.90,\r\n    \"dataPedido\": \"2026-07-08T10:00:00\"\r\n}",
+              "raw": "{\r\n  \"pedidoId\": 1,\r\n  \"valor\": 15000.00,\r\n  \"formaPagamento\": \"MOCK\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -311,14 +403,14 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/pedidos",
+              "raw": "http://localhost:8080/pagamentos",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "port": "8080",
               "path": [
-                "pedidos"
+                "pagamentos"
               ]
             }
           },
@@ -331,22 +423,18 @@
       "item": [
         {
           "name": "T10 - Acesso sem token 401",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
           "request": {
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnRlQHJhaXplcy5jb20iLCJwZXJmaWwiOiJDTElFTlRFIiwiaWF0IjoxNzgzNTA2OTQ0LCJleHAiOjE3ODM1OTMzNDR9.8PvdaRpNvQIKDJLHh0GMO1ZOjcfy7u_s-yGhdlSQOKI",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             },
-            "method": "POST",
+            "method": "GET",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"clienteId\": 2,\r\n    \"unidadeId\": 1,\r\n    \"status\": \"AGUARDANDO_PAGAMENTO\",\r\n    \"canalPedido\": \"APP\",\r\n    \"formaPagamento\": \"MOCK\",\r\n    \"total\": 25.90,\r\n    \"dataPedido\": \"2026-07-08T10:00:00\",\r\n    \"itens\": [\r\n        {\"produtoId\": 1, \"quantidade\": 100}\r\n    ]\r\n}",
+              "raw": "",
               "options": {
                 "raw": {
                   "language": "json"
@@ -370,40 +458,190 @@
         {
           "name": "T11 - Cliente sem permissao 403",
           "request": {
-            "method": "GET",
-            "header": []
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJpYUBlbWFpbC5jb20iLCJwZXJmaWwiOiJDTElFTlRFIiwiaWF0IjoxNzg1NzY2MDgxLCJleHAiOjE3ODU4NTI0ODF9.0xHbBj1pcUC0IjdhJbivoeos4SjiUJGtugzwonzxYWY",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Produto Teste\",\r\n  \"descricao\": \"Teste de permissao\",\r\n  \"preco\": 10.00,\r\n  \"categoria\": \"Teste\",\r\n  \"ativo\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/produtos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "produtos"
+              ]
+            }
           },
           "response": []
         },
         {
           "name": "T12 - canalPedido ausente 422",
           "request": {
-            "method": "GET",
-            "header": []
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NjYzMjMsImV4cCI6MTc4NTg1MjcyM30.rigKdppII1gNb3YKkZkweOihHaMwIQwbijnY25YJ2tc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"clienteId\": 2,\r\n  \"unidadeId\": 1,\r\n  \"formaPagamento\": \"MOCK\",\r\n  \"itens\": [\r\n    { \"produtoId\": 1, \"quantidade\": 1 }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/pedidos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pedidos"
+              ]
+            }
           },
           "response": []
         },
         {
           "name": "T13 - Produto inexistente 404",
           "request": {
-            "method": "GET",
-            "header": []
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NjYzMjMsImV4cCI6MTc4NTg1MjcyM30.rigKdppII1gNb3YKkZkweOihHaMwIQwbijnY25YJ2tc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"clienteId\": 2,\r\n  \"unidadeId\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"formaPagamento\": \"MOCK\",\r\n  \"itens\": [\r\n    { \"produtoId\": 9999, \"quantidade\": 1 }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/pedidos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pedidos"
+              ]
+            }
           },
           "response": []
         },
         {
           "name": "T14 - Quantidade invalida 422",
           "request": {
-            "method": "GET",
-            "header": []
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NjYzMjMsImV4cCI6MTc4NTg1MjcyM30.rigKdppII1gNb3YKkZkweOihHaMwIQwbijnY25YJ2tc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"clienteId\": 2,\r\n  \"unidadeId\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"formaPagamento\": \"MOCK\",\r\n  \"itens\": [\r\n    { \"produtoId\": 1, \"quantidade\": -5 }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/pedidos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pedidos"
+              ]
+            }
           },
           "response": []
         },
         {
           "name": "T15 - Estoque insuficiente 409",
           "request": {
-            "method": "GET",
-            "header": []
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkByYWl6ZXMuY29tIiwicGVyZmlsIjoiQURNSU4iLCJpYXQiOjE3ODU3NjYzMjMsImV4cCI6MTc4NTg1MjcyM30.rigKdppII1gNb3YKkZkweOihHaMwIQwbijnY25YJ2tc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"clienteId\": 2,\r\n  \"unidadeId\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"formaPagamento\": \"MOCK\",\r\n  \"itens\": [\r\n    { \"produtoId\": 1, \"quantidade\": 999 }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/pedidos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pedidos"
+              ]
+            }
           },
           "response": []
         }
